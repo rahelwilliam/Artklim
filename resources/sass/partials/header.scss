@@ -1,0 +1,29 @@
+.nav-header {
+    
+}
+
+.header-whatsapp {
+    position: fixed;
+    bottom: 1.25rem;
+    right: 1.25rem;
+    z-index: 999;
+    font-size: 50px;
+    background-color: var(--color-green);
+    color: var(--color-text);
+    width: 5rem;
+    height: 5rem;
+    border-radius: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    transition: all .3s ease;
+    box-shadow: 0 0 20px 0 rgba(10, 16, 21, 0.08);
+    &:visited, &:focus-visible {
+        background-color: var(--color-green);
+        color: var(--color-text);
+    }
+    &:hover {
+        background-color: var(--color-clean);
+        color: var(--color-text);
+    }
+}

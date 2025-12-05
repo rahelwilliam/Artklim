@@ -1,0 +1,35 @@
+.w-richtext {
+    line-height: 22px;
+    font-size: 18px;
+}
+
+.w-richtext ul {
+    padding-bottom: 20px;
+}
+
+.w-richtext li {
+    padding-bottom: 10px;
+}
+
+.w-richtext .wp-block-image {
+    padding-bottom: 10px;
+}
+
+.w-richtext figure img {
+    width: auto;
+    height: auto;
+}
+
+figure.alignleft figcaption {
+    text-align: left;
+}
+
+figcaption {
+    font-style: italic;
+    color: #feabd0;
+    font-size: 14px;
+}
+
+a.w-webflow-badge {
+    display: none !important;
+}
