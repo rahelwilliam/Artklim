@@ -46,7 +46,7 @@
         <?php $menu_destaque = get_field('menu_destacado', 'option'); ?>
         <ul class="menu-btns">
             <!-- <li><a href="" class="btn search search-trigger"><i class="icon ti-search "></i></a></li> -->
-            <li><a href="<?php echo $menu_destaque['url']; ?>" target="<?php echo $menu_destaque['target']; ?>" class="btn btn-sm"><?php echo $menu_destaque['title']; ?></a></li>
+            <li><a href="<?php echo $menu_destaque['url']; ?>?text=Oi,%20estava%20acessando%20o%20site%20e%20gostaria%20de%20saber%20mais,%20voc%C3%AA%20pode%20me%20ajudar?" target="<?php echo $menu_destaque['target']; ?>" class="btn btn-sm"><?php echo $menu_destaque['title']; ?></a></li>
         </ul>
     </nav>
 </div>
