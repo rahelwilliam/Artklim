@@ -26,18 +26,27 @@ $block_id = $id ? 'id="' . sanitize_title($id) . '"' : '';
                 if ($tipo_midia === 'video') {
                     $video = get_sub_field('video_do_card');
                     if ($video) {
+                        // Tenta obter a thumbnail do vídeo
+                        $video_id = $video['ID'];
+                        $video_thumb = wp_get_attachment_image_src($video_id, 'large');
+                        $poster_url = $video_thumb ? $video_thumb[0] : getFallBack();
+                        
                         $media_html = '
                         <div class="bg-img video-container">
-                            <div class="bg-image">
+                            <div class="bg-image video-wrapper" data-aspect-ratio="">
                                 <video class="video-player" 
-                                       controls 
-                                       preload="metadata" 
-                                       poster="' . getFallBack() . '">
+                                    controls 
+                                    preload="metadata" 
+                                    poster="' . esc_url($poster_url) . '">
                                     <source src="' . esc_url($video['url']) . '" type="' . esc_attr($video['mime_type']) . '">
                                     ' . __('Seu navegador não suporta a tag de vídeo.', 'codix') . '
                                 </video>
                                 <div class="video-play-button">
-                                    <i class="ri-play-fill"></i>
+                                    <i class="fa fa-play"></i>
+                                </div>
+                                <!-- Overlay para indicar que é vídeo -->
+                                <div class="video-badge">
+                                    <i class="fa fa-play-circle"></i> Vídeo
                                 </div>
                             </div>
                         </div>';
@@ -108,32 +117,84 @@ $block_id = $id ? 'id="' . sanitize_title($id) . '"' : '';
     </section>
     <!-- .section -->
     
-    <!-- Estilos específicos para vídeo -->
+    <!-- Estilos específicos para vídeo responsivo -->
     <style>
+        /* Container principal mantém proporção */
         .video-container {
             position: relative;
+            width: 100%;
             overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
-        .bg-image {
-            opacity: 1;
-        }
-        
-        .video-container .bg-image {
+        /* Wrapper responsivo para vídeo */
+        .video-wrapper {
             position: relative;
-            padding-bottom: 0; /* 16:9 Aspect Ratio */
+            width: 100%;
+            padding-top: 0; /* Removemos o padding fixo */
             height: auto;
+            min-height: 300px; /* Altura mínima para mobile */
         }
-        
+
+        /* Vídeo responsivo */
         .video-container video {
+            position: relative; /* Mude de absolute para relative */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: auto; /* Altura automática baseada na proporção */
+            /* max-height: 600px; */
+            display: block;
+            object-fit: contain; /* Mostra vídeo inteiro sem cortar */
+            background-color: #000; /* Fundo preto para bordas */
+        }
+
+        /* Para manter proporção em telas grandes */
+        @media (min-width: 768px) {
+            .video-wrapper {
+                min-height: 400px;
+            }
+            
+            /* .video-container video {
+                max-height: 500px;
+            } */
+        }
+
+        @media (min-width: 992px) {
+            .video-wrapper {
+                min-height: 450px;
+            }
+            
+            /* .video-container video {
+                max-height: 550px;
+            } */
+        }
+
+        /* Container de imagem também precisa ser responsivo */
+        .bg-img:not(.video-container) .bg-image {
+            position: relative;
+            padding-bottom: 75%; /* Proporção 4:3 para imagens */
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .bg-img:not(.video-container) .bg-image img {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: transform 0.3s ease;
         }
-        
+
+        .bg-img:not(.video-container):hover .bg-image img {
+            transform: scale(1.05);
+        }
+
+        /* Botão de play centralizado */
         .video-play-button {
             position: absolute;
             top: 50%;
@@ -149,51 +210,291 @@ $block_id = $id ? 'id="' . sanitize_title($id) . '"' : '';
             cursor: pointer;
             z-index: 2;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
-        
+
         .video-play-button:hover {
             background: white;
             transform: translate(-50%, -50%) scale(1.1);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
         }
-        
+
         .video-play-button i {
             font-size: 30px;
             color: #333;
             margin-left: 5px;
         }
-        
+
         .video-playing .video-play-button {
             opacity: 0;
             visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        /* Equalizar altura das colunas */
+        .row.gutter-vr-30px {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: stretch; /* Faz as colunas terem mesma altura */
+        }
+
+        .row.gutter-vr-30px > .col-md-6 {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Card de texto ocupa altura total */
+        .text-block.fw-3 {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Responsividade para mobile */
+        @media (max-width: 767px) {
+            .row.gutter-vr-30px > .col-md-6 {
+                margin-bottom: 30px;
+            }
+            
+            .video-wrapper {
+                min-height: 250px;
+            }
+            
+            /* .video-container video {
+                max-height: 400px;
+            } */
+            
+            .video-play-button {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .video-play-button i {
+                font-size: 25px;
+            }
+        }
+
+        /* Animações suaves */
+        .scroll-image {
+            transition: opacity 0.5s ease;
+        }
+
+        .scroll-image.lazy-loaded {
+            opacity: 1;
+        }
+
+        [data-id="cards2"] .bg-image {
+            position: relative !important;
+            opacity: 1 !important;
+        }
+
+        /* Badge indicador de vídeo */
+        .video-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            z-index: 3;
+            backdrop-filter: blur(4px);
+        }
+
+        .video-badge i {
+            font-size: 14px;
+        }
+
+        /* Container inteligente que se adapta ao conteúdo */
+        .video-wrapper[data-aspect-ratio] {
+            transition: padding-top 0.3s ease;
+        }
+
+        /* Classes para diferentes proporções */
+        .video-wrapper.aspect-square {
+            padding-bottom: 100% !important; /* 1:1 */
+        }
+
+        .video-wrapper.aspect-landscape {
+            padding-bottom: 56.25% !important; /* 16:9 */
+        }
+
+        .video-wrapper.aspect-portrait {
+            padding-bottom: 177.78% !important; /* 9:16 */
+        }
+
+        /* Mantém vídeo dentro do container */
+        .video-container video {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            object-fit: cover; /* Corta para preencher */
+        }
+
+        /* Quando estiver tocando, mostra vídeo inteiro */
+        .video-playing video {
+            object-fit: contain !important;
+            background-color: #000;
+        }
+
+        /* Overlay escuro na thumbnail para melhor contraste */
+        .video-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.3));
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .video-wrapper:hover::before {
+            opacity: 1;
         }
     </style>
     
-    <!-- Script para controle de vídeo -->
+    <!-- Script para controle de vídeo responsivo com detecção de proporção -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Configurar vídeos
         document.querySelectorAll('.video-player').forEach(function(video) {
             const container = video.closest('.video-container');
+            const wrapper = container.querySelector('.video-wrapper');
             const playButton = container.querySelector('.video-play-button');
             
+            // Função para determinar classe de proporção
+            function setAspectRatioClass(width, height) {
+                const aspectRatio = width / height;
+                wrapper.classList.remove('aspect-square', 'aspect-landscape', 'aspect-portrait');
+                
+                if (aspectRatio >= 0.9 && aspectRatio <= 1.1) {
+                    // Quase quadrado
+                    wrapper.classList.add('aspect-square');
+                    wrapper.style.paddingBottom = '100%';
+                } else if (aspectRatio > 1.1) {
+                    // Paisagem
+                    wrapper.classList.add('aspect-landscape');
+                    wrapper.style.paddingBottom = (100 / aspectRatio) + '%';
+                } else {
+                    // Retrato
+                    wrapper.classList.add('aspect-portrait');
+                    wrapper.style.paddingBottom = (100 / aspectRatio) + '%';
+                }
+            }
+            
+            // Configurar tamanho baseado na proporção do vídeo
+            video.addEventListener('loadedmetadata', function() {
+                setAspectRatioClass(video.videoWidth, video.videoHeight);
+                
+                // Se não tiver poster, cria um do primeiro frame
+                if (!video.poster) {
+                    createVideoThumbnail(video);
+                }
+            });
+            
+            // Se já tiver metadata
+            if (video.videoWidth && video.videoHeight) {
+                setAspectRatioClass(video.videoWidth, video.videoHeight);
+            }
+            
+            // Controles de play/pause
             if (playButton) {
                 playButton.addEventListener('click', function() {
-                    video.play();
-                    container.classList.add('video-playing');
+                    if (video.paused) {
+                        video.play().then(function() {
+                            container.classList.add('video-playing');
+                            // Muda object-fit para contain quando toca
+                            video.style.objectFit = 'contain';
+                        }).catch(function(error) {
+                            console.error('Erro ao reproduzir vídeo:', error);
+                        });
+                    } else {
+                        video.pause();
+                        container.classList.remove('video-playing');
+                        // Volta para cover quando pausa
+                        video.style.objectFit = 'cover';
+                    }
                 });
             }
             
             video.addEventListener('play', function() {
                 container.classList.add('video-playing');
+                video.style.objectFit = 'contain';
             });
             
             video.addEventListener('pause', function() {
                 container.classList.remove('video-playing');
+                video.style.objectFit = 'cover';
             });
             
             video.addEventListener('ended', function() {
                 container.classList.remove('video-playing');
+                video.style.objectFit = 'cover';
+                video.currentTime = 0;
             });
+            
+            // Pausar vídeo quando sair da viewport
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (!entry.isIntersecting && !video.paused) {
+                        video.pause();
+                    }
+                });
+            }, { threshold: 0.3 });
+            
+            observer.observe(video);
         });
+        
+        // Função para criar thumbnail do vídeo (fallback)
+        function createVideoThumbnail(videoElement) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            
+            canvas.width = 300;
+            canvas.height = 300;
+            
+            // Tenta capturar um frame
+            videoElement.addEventListener('loadeddata', function() {
+                if (videoElement.readyState >= 2) { // HAVE_CURRENT_DATA
+                    context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+                    videoElement.poster = canvas.toDataURL('image/jpeg');
+                }
+            }, { once: true });
+        }
+        
+        // Equalizar altura dos cards (mantido)
+        function equalizeCardHeights() {
+            document.querySelectorAll('.row.gutter-vr-30px').forEach(function(row) {
+                const mediaCol = row.querySelector('.col-md-6:first-child');
+                const textCol = row.querySelector('.col-md-6:last-child');
+                
+                if (mediaCol && textCol && window.innerWidth >= 768) {
+                    const mediaHeight = mediaCol.offsetHeight;
+                    textCol.style.minHeight = mediaHeight + 'px';
+                } else {
+                    document.querySelectorAll('.col-md-6').forEach(function(col) {
+                        col.style.minHeight = '';
+                    });
+                }
+            });
+        }
+        
+        equalizeCardHeights();
+        window.addEventListener('resize', equalizeCardHeights);
+        document.addEventListener('lazyloaded', equalizeCardHeights);
     });
     </script>
     
@@ -221,7 +522,7 @@ function get_media_image($index) {
             <img data-src="' . esc_url($img_final) . '" 
                  loading="lazy" 
                  src="' . esc_url($img_thumb) . '" 
-                 class="img-fluid w-100 scroll-image" 
+                 class="img-fluid w-100 scroll-image lazy-image" 
                  alt="' . esc_attr($title) . '">
         </div>
     </div>';
@@ -239,10 +540,9 @@ function get_media_fallback_image($index) {
             <img data-src="' . esc_url(getFallBack()) . '" 
                  loading="lazy" 
                  src="' . esc_url(getFallBack()) . '" 
-                 class="img-fluid w-100 scroll-image" 
+                 class="img-fluid w-100 scroll-image lazy-image" 
                  alt="' . esc_attr($title) . '">
         </div>
     </div>';
 }
 ?>
-
