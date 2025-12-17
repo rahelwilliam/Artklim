@@ -36,7 +36,7 @@ $ajax_nonce = wp_create_nonce('cta_form_ajax_nonce');
                 <div class="cta-text cta-text-s3 mb-4 mb-lg-0">
                     <h2>
                         <strong><?php echo wp_strip_all_tags($titulo_bold); ?></strong>
-                        <?php echo wp_strip_all_tags($titulo_resto); ?>
+                        <?php //echo wp_strip_all_tags($titulo_resto); ?>
                         <?php if($texto): ?>
                             <span class="d-block mt-2"><?php echo wp_strip_all_tags($texto); ?></span>
                         <?php endif; ?>
@@ -55,8 +55,8 @@ $ajax_nonce = wp_create_nonce('cta_form_ajax_nonce');
                             <input type="text" 
                                    name="nome" 
                                    class="form-cta-input" 
-                                   placeholder="Seu nome completo *" 
-                                   required>
+                                   placeholder="Seu nome" 
+                                   >
                         </div>
                         
                         <div class="form-group">
